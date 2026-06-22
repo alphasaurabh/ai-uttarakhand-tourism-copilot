@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+
 export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b">
@@ -13,6 +14,7 @@ export default function Navbar() {
           <Link href="/about">About</Link>
           <Link href="/dashboard">Dashboard</Link>
           <Link href="/login">Login</Link>
+          <Link href="/ai-planner">AI Planner</Link>
         </div>
       </div>
     </nav>

@@ -1,6 +1,11 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
+
 const app = express();
+
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -26,7 +31,7 @@ app.get("/", (req, res) => {
 
 // Get all destinations
 app.get("/api/destinations", (req, res) => {
-  res.json(destinations);
+  res.status(200).json(destinations);
 });
 
 // Search destinations
@@ -39,11 +44,11 @@ app.get("/api/destinations/search", (req, res) => {
     });
   }
 
-  const filtered = destinations.filter((d) =>
-    d.name.toLowerCase().includes(q.toLowerCase())
+  const filtered = destinations.filter((destination) =>
+    destination.name.toLowerCase().includes(q.toLowerCase())
   );
 
-  res.json(filtered);
+  res.status(200).json(filtered);
 });
 
 // Get destination by ID
@@ -57,7 +62,7 @@ app.get("/api/destinations/:id", (req, res) => {
   }
 
   const destination = destinations.find(
-    (d) => d.id === id
+    (destination) => destination.id === id
   );
 
   if (!destination) {
@@ -66,7 +71,7 @@ app.get("/api/destinations/:id", (req, res) => {
     });
   }
 
-  res.json(destination);
+  res.status(200).json(destination);
 });
 
 // Create destination
@@ -98,7 +103,7 @@ app.put("/api/destinations/:id", (req, res) => {
   const { name, location } = req.body;
 
   const destination = destinations.find(
-    (d) => d.id === id
+    (destination) => destination.id === id
   );
 
   if (!destination) {
@@ -107,10 +112,10 @@ app.put("/api/destinations/:id", (req, res) => {
     });
   }
 
-  destination.name = name || destination.name;
-  destination.location = location || destination.location;
+  if (name) destination.name = name;
+  if (location) destination.location = location;
 
-  res.json(destination);
+  res.status(200).json(destination);
 });
 
 // Delete destination
@@ -118,7 +123,7 @@ app.delete("/api/destinations/:id", (req, res) => {
   const id = Number(req.params.id);
 
   const index = destinations.findIndex(
-    (d) => d.id === id
+    (destination) => destination.id === id
   );
 
   if (index === -1) {
@@ -132,7 +137,16 @@ app.delete("/api/destinations/:id", (req, res) => {
   res.status(204).send();
 });
 
-// Start server
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+
+  res.status(500).json({
+    message: "Internal Server Error",
+  });
+});
+
+// Start Server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

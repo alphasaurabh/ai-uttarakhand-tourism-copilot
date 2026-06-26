@@ -152,7 +152,7 @@ All API endpoints were tested using Postman.
 The exported collection file is:
 
 ```text
-W4_APICollection_[InternID].json
+W4_APICollection_TBI26100420.json
 ```
 
 ---

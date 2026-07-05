@@ -21,20 +21,24 @@ export default function Home() {
       .then((data) => setDestinations(data))
       .catch((err) => console.error(err));
   }, []);
-
+  const destinationImages: Record<string, string> = {
+    Mussoorie: "/images/mussorie.jpg",
+    Nainital: "/images/nainital.jpg",
+    Rishikesh: "/images/rishikesh.jpg",
+  };
   return (
     <>
       <Navbar />
 
       <Hero />
 
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 dark:bg-gray-900 py-20">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center text-gray-900">
+          <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white">
             Popular Destinations
           </h2>
 
-          <p className="text-center text-gray-600 mt-4">
+          <p className="text-center text-gray-600 dark:text-gray-300 mt-4">
             Explore the most loved places in Uttarakhand.
           </p>
 
@@ -43,8 +47,11 @@ export default function Home() {
               <Card
                 key={destination.id}
                 title={destination.name}
-                description={`Beautiful place in ${destination.location}`}
-                image="/images/nainital.jpg"
+                description={destination.description}
+                image={
+                  destinationImages[destination.name] ||
+                  "/images/nainital.jpg"
+                }
               />
             ))}
           </div>

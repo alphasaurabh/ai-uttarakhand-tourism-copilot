@@ -12,7 +12,7 @@ export default function Card({
   image,
 }: CardProps) {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
 
       <div className="relative h-60 overflow-hidden">
         <Image
@@ -30,11 +30,11 @@ export default function Card({
       </div>
 
       <div className="p-6">
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           {description}
         </p>
 
-        <button className="mt-5 text-emerald-600 font-semibold hover:text-emerald-700">
+        <button className="mt-5 text-emerald-600 dark:text-emerald-400 font-semibold hover:text-emerald-700 dark:hover:text-emerald-300">
           Explore →
         </button>
       </div>

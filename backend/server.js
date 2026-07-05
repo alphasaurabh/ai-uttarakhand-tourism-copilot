@@ -1,5 +1,5 @@
 require("dotenv").config();
-
+const prisma = require("./config/db");
 const express = require("express");
 const cors = require("cors");
 
@@ -10,131 +10,139 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// In-memory data
-const destinations = [
-  {
-    id: 1,
-    name: "Mussoorie",
-    location: "Dehradun",
-  },
-  {
-    id: 2,
-    name: "Nainital",
-    location: "Nainital",
-  },
-];
-
 // Home Route
 app.get("/", (req, res) => {
   res.send("Welcome to Uttarakhand Tourism API 🚀");
 });
 
 // Get all destinations
-app.get("/api/destinations", (req, res) => {
-  res.status(200).json(destinations);
+app.get("/api/destinations", async (req, res) => {
+  try {
+    const destinations = await prisma.destination.findMany();
+
+    res.status(200).json(destinations);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 });
 
 // Search destinations
-app.get("/api/destinations/search", (req, res) => {
-  const q = req.query.q;
+app.get("/api/destinations/search", async (req, res) => {
+  try {
+    const q = req.query.q;
 
-  if (!q) {
-    return res.status(400).json({
-      message: "Search query is required",
+    if (!q) {
+      return res.status(400).json({
+        message: "Search query is required",
+      });
+    }
+
+    const destinations = await prisma.destination.findMany({
+      where: {
+        name: {
+          contains: q,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    res.status(200).json(destinations);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
     });
   }
-
-  const filtered = destinations.filter((destination) =>
-    destination.name.toLowerCase().includes(q.toLowerCase())
-  );
-
-  res.status(200).json(filtered);
 });
 
 // Get destination by ID
-app.get("/api/destinations/:id", (req, res) => {
-  const id = Number(req.params.id);
+app.get("/api/destinations/:id", async (req, res) => {
+  try {
+    const destination = await prisma.destination.findUnique({
+      where: {
+        id: req.params.id,
+      },
+    });
 
-  if (isNaN(id)) {
-    return res.status(400).json({
-      message: "Invalid ID",
+    if (!destination) {
+      return res.status(404).json({
+        message: "Destination not found",
+      });
+    }
+
+    res.status(200).json(destination);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
     });
   }
-
-  const destination = destinations.find(
-    (destination) => destination.id === id
-  );
-
-  if (!destination) {
-    return res.status(404).json({
-      message: "Destination not found",
-    });
-  }
-
-  res.status(200).json(destination);
 });
 
 // Create destination
-app.post("/api/destinations", (req, res) => {
-  const { name, location } = req.body;
+app.post("/api/destinations", async (req, res) => {
+  try {
+    const { name, location, description, imageUrl } = req.body;
 
-  if (!name || !location) {
-    return res.status(400).json({
-      message: "Name and location are required",
+    const destination = await prisma.destination.create({
+      data: {
+        name,
+        location,
+        description,
+        imageUrl,
+      },
+    });
+
+    res.status(201).json(destination);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
     });
   }
-
-  const newDestination = {
-    id: destinations.length
-      ? destinations[destinations.length - 1].id + 1
-      : 1,
-    name,
-    location,
-  };
-
-  destinations.push(newDestination);
-
-  res.status(201).json(newDestination);
 });
 
 // Update destination
-app.put("/api/destinations/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const { name, location } = req.body;
+app.put("/api/destinations/:id", async (req, res) => {
+  try {
+    const { name, location, description, imageUrl } = req.body;
 
-  const destination = destinations.find(
-    (destination) => destination.id === id
-  );
+    const destination = await prisma.destination.update({
+      where: {
+        id: req.params.id,
+      },
+      data: {
+        name,
+        location,
+        description,
+        imageUrl,
+      },
+    });
 
-  if (!destination) {
-    return res.status(404).json({
-      message: "Destination not found",
+    res.status(200).json(destination);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
     });
   }
-
-  if (name) destination.name = name;
-  if (location) destination.location = location;
-
-  res.status(200).json(destination);
 });
 
 // Delete destination
-app.delete("/api/destinations/:id", (req, res) => {
-  const id = Number(req.params.id);
+app.delete("/api/destinations/:id", async (req, res) => {
+  try {
+    await prisma.destination.delete({
+      where: {
+        id: req.params.id,
+      },
+    });
 
-  const index = destinations.findIndex(
-    (destination) => destination.id === id
-  );
-
-  if (index === -1) {
-    return res.status(404).json({
-      message: "Destination not found",
+    res.status(200).json({
+      message: "Destination deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
     });
   }
-
-  destinations.splice(index, 1);
-
-  res.status(204).send();
 });
 
 // Global Error Handler

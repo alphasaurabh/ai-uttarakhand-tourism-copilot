@@ -1,45 +1,65 @@
 # AI-Powered Uttarakhand Tourism Copilot
 
-An AI-assisted full-stack web application that helps users explore popular tourist destinations in Uttarakhand and provides dynamic destination management through REST APIs.
+An AI-assisted full-stack web application that helps users explore tourist destinations in Uttarakhand through a modern web interface and a PostgreSQL-powered REST API. The project is being developed as part of the **AI-Assisted Full Stack Web Development Internship**.
 
 ---
 
-## Features
+# Features
 
-* Explore popular destinations in Uttarakhand
-* Dynamic destination data from backend APIs
-* Create, update, search, and delete destinations
-* Responsive and modern user interface
-* Frontend and backend integration
-* RESTful API architecture
-
----
-
-## Tech Stack
-
-### Frontend
-
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-
-### Backend
-
-* Node.js
-* Express.js
-* CORS
-* dotenv
-
-### Tools & Utilities
-
-* Postman
-* Git & GitHub
-* VS Code
+- Explore popular tourist destinations in Uttarakhand
+- Create, view, update, search, and delete destinations
+- PostgreSQL database with persistent data storage
+- RESTful API architecture
+- Modular Express.js backend
+- Responsive frontend built with Next.js
+- Prisma ORM integration
+- Cloud-hosted database using Supabase
 
 ---
 
-## Project Structure
+# Tech Stack
+
+## Frontend
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+
+## Backend
+
+- Node.js
+- Express.js
+- Prisma ORM
+- PostgreSQL (Supabase)
+- CORS
+- dotenv
+
+## Tools
+
+- Prisma
+- Supabase
+- Postman
+- Git & GitHub
+- VS Code
+
+---
+
+# Database Choice
+
+This project uses **PostgreSQL** hosted on **Supabase** together with **Prisma ORM**.
+
+### Why PostgreSQL?
+
+- Structured relational database
+- Persistent cloud storage
+- Easy relationship management
+- Type-safe database queries with Prisma
+- Scalable and production-ready
+
+---
+
+# Project Structure
 
 ```text
 ai-uttarakhand-tourism-copilot/
@@ -47,12 +67,26 @@ ai-uttarakhand-tourism-copilot/
 ├── app/
 ├── components/
 ├── public/
+│
 ├── backend/
-│   ├── server.js
-│   ├── package.json
+│   │
+│   ├── config/
+│   │   └── db.js
+│   │
+│   ├── controllers/
+│   │   └── destinationController.js
+│   │
+│   ├── prisma/
+│   │   ├── migrations/
+│   │   └── schema.prisma
+│   │
+│   ├── routes/
+│   │   └── destinations.js
+│   │
 │   ├── .env
 │   ├── .env.example
-│   └── .gitignore
+│   ├── package.json
+│   └── server.js
 │
 ├── package.json
 └── README.md
@@ -60,34 +94,78 @@ ai-uttarakhand-tourism-copilot/
 
 ---
 
-## Backend API Endpoints
+# Database Schema
 
-| Method | Endpoint                      | Description           |
-| ------ | ----------------------------- | --------------------- |
-| GET    | `/api/destinations`           | Get all destinations  |
-| GET    | `/api/destinations/:id`       | Get destination by ID |
-| GET    | `/api/destinations/search?q=` | Search destinations   |
-| POST   | `/api/destinations`           | Create a destination  |
-| PUT    | `/api/destinations/:id`       | Update a destination  |
-| DELETE | `/api/destinations/:id`       | Delete a destination  |
+The project currently contains the following entities:
+
+- User
+- Destination
+- Homestay
+- Trip
+
+> **Schema Diagram**
+
+Add your exported schema diagram here.
+
+```md
+![Database Schema](images/schema-diagram.png)
+```
 
 ---
 
-## How to Run the Frontend
+# Backend API Endpoints
 
-Install dependencies:
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/destinations` | Get all destinations |
+| GET | `/api/destinations/:id` | Get destination by ID |
+| GET | `/api/destinations/search?q=` | Search destinations |
+| POST | `/api/destinations` | Create destination |
+| PUT | `/api/destinations/:id` | Update destination |
+| DELETE | `/api/destinations/:id` | Delete destination |
+
+---
+
+# Backend Architecture
+
+The backend follows a modular Express.js architecture.
+
+```text
+Client
+      │
+      ▼
+server.js
+      │
+      ▼
+Routes
+      │
+      ▼
+Controllers
+      │
+      ▼
+Prisma ORM
+      │
+      ▼
+PostgreSQL (Supabase)
+```
+
+---
+
+# How to Run the Frontend
+
+Install dependencies
 
 ```bash
 npm install
 ```
 
-Start the development server:
+Run the frontend
 
 ```bash
 npm run dev
 ```
 
-Frontend runs at:
+Frontend URL
 
 ```text
 http://localhost:3000
@@ -95,33 +173,46 @@ http://localhost:3000
 
 ---
 
-## How to Run the Backend
+# How to Run the Backend
 
-Navigate to the backend folder:
+Navigate to backend
 
 ```bash
 cd backend
 ```
 
-Install dependencies:
+Install dependencies
 
 ```bash
 npm install
 ```
 
-Create a `.env` file:
+Create a `.env` file
 
 ```env
 PORT=5000
+DATABASE_URL=your_supabase_database_url
 ```
 
-Start the backend server:
+Run database migrations
+
+```bash
+npx prisma migrate dev
+```
+
+Generate Prisma Client
+
+```bash
+npx prisma generate
+```
+
+Start the backend server
 
 ```bash
 npm run dev
 ```
 
-Backend runs at:
+Backend URL
 
 ```text
 http://localhost:5000
@@ -129,61 +220,75 @@ http://localhost:5000
 
 ---
 
-## Environment Variables
+# Environment Variables
 
-`.env`
+### `.env`
 
 ```env
 PORT=5000
+DATABASE_URL=your_supabase_database_url
 ```
 
-`.env.example`
+### `.env.example`
 
 ```env
-PORT=
+PORT=5000
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT.supabase.co:5432/postgres
 ```
 
 ---
 
-## API Testing
+# API Testing
 
-All API endpoints were tested using Postman.
+All endpoints were tested successfully using **Postman**.
 
-The exported collection file is:
+Verified operations include:
 
-```text
-W4_APICollection_TBI26100420.json
-```
+- Create
+- Read
+- Update
+- Delete
+- Search
 
----
-
-## Week 4 Achievements
-
-* Set up an Express.js backend server.
-* Designed and implemented 6 REST API endpoints.
-* Added proper HTTP status codes and error handling.
-* Connected the Next.js frontend to the backend.
-* Replaced hardcoded data with live API data.
-* Successfully transformed the project into a full-stack application.
+All operations interact directly with the PostgreSQL database hosted on Supabase.
 
 ---
 
-## Future Improvements
+# Week 5 Achievements
 
-* PostgreSQL database integration
-* Supabase authentication
-* AI-powered trip planning
-* Destination recommendations
-* User dashboard and saved trips
-* Interactive maps and weather integration
+- Configured PostgreSQL database using Supabase
+- Integrated Prisma ORM
+- Designed relational database schema
+- Performed Prisma migrations
+- Generated Prisma Client
+- Connected Express.js backend to PostgreSQL
+- Migrated from in-memory storage to persistent database storage
+- Implemented complete CRUD operations
+- Added search functionality
+- Refactored backend into Routes and Controllers architecture
 
 ---
 
-## Author
+# Future Improvements
+
+- User Authentication
+- Role-Based Authorization
+- AI Trip Planner using Gemini API
+- Homestay Management
+- Saved Trips
+- Interactive Maps
+- Weather Integration
+- Trip Budget Planner
+- AI Chat Assistant
+
+---
+
+# Author
 
 **Saurabh Chandravanshi**
-B.Tech Information Technology
+
+B.Tech Information Technology  
 Gautam Buddha University
 
-**Project:** AI-Powered Uttarakhand Tourism Copilot
+**AI-Assisted Full Stack Web Development Internship**
 

@@ -2,17 +2,20 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-
+const authRoutes = require("./routes/auth");
 const destinationRoutes = require("./routes/destinations");
-
 const app = express();
-
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
-
 app.use("/api/destinations", destinationRoutes);
+app.use("/api/auth", authRoutes);
 
 // Home Route
 app.get("/", (req, res) => {

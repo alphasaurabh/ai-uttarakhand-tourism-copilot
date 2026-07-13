@@ -9,11 +9,11 @@ export default function Providers({
 }) {
   return (
     <ThemeProvider
-  attribute="class"
-  defaultTheme="light"
-  enableSystem={false}
-  disableTransitionOnChange
->
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={false}
+      disableTransitionOnChange
+    >
       {children}
     </ThemeProvider>
   );

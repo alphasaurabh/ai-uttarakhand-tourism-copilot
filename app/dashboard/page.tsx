@@ -1,15 +1,18 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 
-export default async function Dashboard() {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
+export default function Dashboard() {
+  const router = useRouter();
 
-  if (!claimsData) {
-    redirect("/login?next=/dashboard");
-  }
+  useEffect(() => {
+    if (!window.localStorage.getItem("token")) {
+      router.replace("/login?next=/dashboard");
+    }
+  }, [router]);
 
   return (
     <>

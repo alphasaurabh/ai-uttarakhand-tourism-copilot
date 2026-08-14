@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "./ThemeToggle";
 
@@ -10,9 +10,10 @@ const navItems = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/login", label: "Login" },
   { href: "/ai-planner", label: "AI Planner" },
 ];
+
+const tokenChangedEvent = "auth-token-changed";
 
 function NavLink({ href, label, pathname, onClick }: {
   href: string;
@@ -38,14 +39,51 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const updateAuthenticationState = () => {
+      setIsAuthenticated(Boolean(window.localStorage.getItem("token")));
+    };
+
+    const supabase = createClient();
+    const syncSessionToken = (accessToken?: string) => {
+      if (accessToken) {
+        window.localStorage.setItem("token", accessToken);
+      } else {
+        window.localStorage.removeItem("token");
+      }
+      updateAuthenticationState();
+    };
+
+    updateAuthenticationState();
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.access_token) {
+        syncSessionToken(data.session.access_token);
+      }
+    });
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      syncSessionToken(session?.access_token);
+    });
+    window.addEventListener("storage", updateAuthenticationState);
+    window.addEventListener(tokenChangedEvent, updateAuthenticationState);
+
+    return () => {
+      authListener.subscription.unsubscribe();
+      window.removeEventListener("storage", updateAuthenticationState);
+      window.removeEventListener(tokenChangedEvent, updateAuthenticationState);
+    };
+  }, []);
 
   const handleSignOut = async () => {
+    window.localStorage.removeItem("token");
+    window.dispatchEvent(new Event(tokenChangedEvent));
+
     const supabase = createClient();
     const { error } = await supabase.auth.signOut();
 
     if (error) {
       console.error("Unable to sign out", error);
-      return;
     }
 
     router.replace("/login");
@@ -81,13 +119,17 @@ export default function Navbar() {
             ))}
           </div>
 
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="rounded-full px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e]/40 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-          >
-            Sign out
-          </button>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="rounded-full px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e]/40 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            >
+              Sign out
+            </button>
+          ) : (
+            <NavLink href="/login" label="Login" pathname={pathname} />
+          )}
 
           <ThemeToggle />
         </div>
@@ -126,16 +168,25 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
             />
           ))}
-          <button
-            type="button"
-            onClick={() => {
-              setMobileOpen(false);
-              handleSignOut();
-            }}
-            className="rounded-full px-3.5 py-2 text-left text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e]/40 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-          >
-            Sign out
-          </button>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                handleSignOut();
+              }}
+              className="rounded-full px-3.5 py-2 text-left text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e]/40 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            >
+              Sign out
+            </button>
+          ) : (
+            <NavLink
+              href="/login"
+              label="Login"
+              pathname={pathname}
+              onClick={() => setMobileOpen(false)}
+            />
+          )}
         </div>
       </div>
     </nav>

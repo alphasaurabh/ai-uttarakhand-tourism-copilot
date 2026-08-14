@@ -3,27 +3,38 @@
 import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 export default function Login() {
     const router = useRouter();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     const supabase = createClient();
 
     const handleLogin = async () => {
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
+            const response = await fetch(`${apiUrl}/api/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
             });
+            const data = await response.json();
 
-            if (error) {
-                alert(error.message);
+            if (!response.ok) {
+                alert(data.message ?? "Invalid email or password.");
                 return;
+            }
+
+            if (data.token) {
+                window.localStorage.setItem("token", data.token);
+                window.dispatchEvent(new Event("auth-token-changed"));
             }
 
             router.replace("/dashboard");
@@ -103,15 +114,28 @@ export default function Login() {
                                     Password
                                 </label>
 
-                                <input
-                                    id="password"
-                                    type="password"
-                                    placeholder="Enter your password"
-                                    autoComplete="current-password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-500/10 dark:text-white"
-                                />
+                                <div className="relative">
+                                    <input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="Enter your password"
+                                        autoComplete="current-password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="h-12 w-full rounded-2xl border border-border bg-background px-4 pr-12 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-500/10 dark:text-white"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((visible) => !visible)}
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
+                                        className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                                    >
+                                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                                            <path d="M2.25 12s3.5-6 9.75-6 9.75 6 9.75 6-3.5 6-9.75 6-9.75-6-9.75-6Z" />
+                                            <circle cx="12" cy="12" r="2.75" />
+                                        </svg>
+                                    </button>
+                                </div>
 
                                 <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
                                     Keep your password private and use a strong combination.
@@ -128,6 +152,16 @@ export default function Login() {
                             >
                                 Sign in
                             </button>
+
+                            <p className="text-center text-sm text-slate-600 dark:text-slate-300">
+                                New here?{" "}
+                                <Link
+                                    href="/signup"
+                                    className="font-medium text-emerald-700 transition hover:text-emerald-800 hover:underline dark:text-emerald-300 dark:hover:text-emerald-200"
+                                >
+                                    Create an account
+                                </Link>
+                            </p>
 
                             <div className="flex items-center gap-4" aria-hidden="true">
                                 <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />

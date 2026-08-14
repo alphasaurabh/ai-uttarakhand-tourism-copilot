@@ -16,6 +16,9 @@ router.post(
         body("password")
             .isLength({ min: 6 })
             .withMessage("Password must be at least 6 characters"),
+        body("captchaToken")
+            .notEmpty()
+            .withMessage("CAPTCHA verification is required"),
     ],
     async (req, res) => {
         const { name, email, password } = req.body;
@@ -27,6 +30,31 @@ router.post(
             });
         }
         try {
+            if (!process.env.RECAPTCHA_SECRET_KEY) {
+                return res.status(500).json({
+                    message: "CAPTCHA is not configured on the server",
+                });
+            }
+
+            const captchaResponse = await fetch(
+                "https://www.google.com/recaptcha/api/siteverify",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams({
+                        secret: process.env.RECAPTCHA_SECRET_KEY,
+                        response: req.body.captchaToken,
+                    }),
+                }
+            );
+            const captchaResult = await captchaResponse.json();
+
+            if (!captchaResult.success) {
+                return res.status(400).json({
+                    message: "CAPTCHA verification failed. Please try again.",
+                });
+            }
+
             // Check if email already exists
             const existingUser = await prisma.user.findUnique({
                 where: {
